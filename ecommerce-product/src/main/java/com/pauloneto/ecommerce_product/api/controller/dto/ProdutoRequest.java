@@ -1,4 +1,4 @@
-package com.pauloneto.ecommerce_product.domain.dto;
+package com.pauloneto.ecommerce_product.api.controller.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProdutoDTO implements Serializable {
+public class ProdutoRequest implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -18,10 +18,6 @@ public class ProdutoDTO implements Serializable {
 	
 	private BigDecimal preco;
 	
-	private Boolean ativo;
-	
-	private String categoria;
-	
-	
+	private Long categoriaId;
 
 }

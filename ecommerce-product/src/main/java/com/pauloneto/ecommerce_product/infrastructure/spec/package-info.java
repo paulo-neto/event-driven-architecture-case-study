@@ -1,0 +1,1 @@
+package com.pauloneto.ecommerce_product.infrastructure.spec;
