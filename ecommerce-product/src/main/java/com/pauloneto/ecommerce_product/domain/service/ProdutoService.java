@@ -21,6 +21,7 @@ public class ProdutoService {
 	private final ProdutoRepository repository;
 	private final CategoriaRepository categoriaRepository;
 	private static final String MSG_CAT_NAO_ENCONTRADA = "Categoria com ID %d não encontrada";
+	private static final String MSG_PROD_NAO_ENCONTRADO = "Produto com ID %d não encontrado";
 	
 	public ProdutoService(final ProdutoRepository repository, CategoriaRepository cr) {
 		this.repository = repository;
@@ -41,17 +42,20 @@ public class ProdutoService {
 		return retorno;
 	}
 	
+	public Produto findOrFail(Long produtoId) {
+		return repository.findById(produtoId).orElseThrow(
+				() -> new EntidadeNaoEncontradaException(String.format(MSG_PROD_NAO_ENCONTRADO, produtoId)));
+	}
+	
 	@Transactional
-	public ProdutoDTO criar(ProdutoRequest request) {
+	public ProdutoDTO create(ProdutoRequest request) {
 		var opCatg = categoriaRepository.findById(request.getCategoriaId());
 		var cat = opCatg.orElseThrow(() -> new EntidadeNaoEncontradaException(
 				String.format(MSG_CAT_NAO_ENCONTRADA, request.getCategoriaId())));
 		var p = Produto.builder().ativo(true).categoria(cat).descricao(request.getDescricao())
 				.nome(request.getNome()).preco(request.getPreco()).build();
 		p = repository.save(p);
-		ProdutoDTO pdto = new ProdutoDTO();
-		BeanUtils.copyProperties(p, pdto, "id");
-		pdto.setCategoria(p.getCategoria().getNome());
+		var pdto = produtoToProdutoDTO(p);
 		return pdto;
 	}
 
@@ -61,11 +65,30 @@ public class ProdutoService {
 			return retorno;
 		
 		produtos.forEach(p -> {
-			ProdutoDTO pdto = new ProdutoDTO();
-			BeanUtils.copyProperties(p, pdto);
-			pdto.setCategoria(p.getCategoria().getNome());
+			var pdto = produtoToProdutoDTO(p);
 			retorno.add(pdto);
 		});
 		return retorno;
+	}
+
+	private ProdutoDTO produtoToProdutoDTO(Produto p) {
+		var pdto = new ProdutoDTO();
+		BeanUtils.copyProperties(p, pdto);
+		pdto.setCategoria(p.getCategoria().getNome());
+		return pdto;
+	}
+
+	public ProdutoDTO update(Long produtoId, Produto produto) {
+		var produtoAtual = findOrFail(produtoId);
+		BeanUtils.copyProperties(produto, produtoAtual, "id");
+		produtoAtual = repository.save(produtoAtual);
+		var pdto = produtoToProdutoDTO(produtoAtual);
+		return pdto;
+	}
+
+	@Transactional
+	public void inativate(Long produtoId) {
+		var produto = findOrFail(produtoId);
+		produto.setAtivo(false);
 	}
 }

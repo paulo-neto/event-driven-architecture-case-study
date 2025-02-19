@@ -16,7 +16,7 @@ public enum TipoProblemaEnum {
 	private String uri;
 	
 	TipoProblemaEnum(String path, String title) {
-		this.uri = "https://algafood.com.br" + path;
+		this.uri = "https://api.produtos.com.br" + path;
 		this.title = title;
 	}
 	

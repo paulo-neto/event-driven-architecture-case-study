@@ -19,7 +19,7 @@
 		<license />
 	</licenses>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -66,6 +66,11 @@
 			<artifactId>flyway-mysql</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+		</dependency>
+		
 		<!-- Testes-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

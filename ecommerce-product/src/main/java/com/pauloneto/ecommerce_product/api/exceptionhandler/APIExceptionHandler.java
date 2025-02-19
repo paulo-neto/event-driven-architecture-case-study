@@ -1,15 +1,23 @@
 package com.pauloneto.ecommerce_product.api.exceptionhandler;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.pauloneto.ecommerce_product.domain.exception.EntidadeNaoEncontradaException;
 
 @ControllerAdvice
@@ -46,6 +54,60 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
 	}
 	
+	@Override
+	protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		Throwable rootCause = ExceptionUtils.getRootCause(ex);
+		
+		if (rootCause instanceof InvalidFormatException) {
+			return handleInvalidFormat((InvalidFormatException) rootCause, headers, status, request);
+		} else if (rootCause instanceof PropertyBindingException) {
+			return handlePropertyBinding((PropertyBindingException) rootCause, headers, status, request); 
+		}
+		
+		TipoProblemaEnum problemType = TipoProblemaEnum.MENSAGEM_INCOMPREENSIVEL;
+		String detail = "O corpo da requisição está inválido. Verifique erro de sintaxe.";
+		
+		Problema problem = createProblemBuilder(status, problemType, detail)
+				.userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+				.build();
+		
+		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+	
+	private ResponseEntity<Object> handlePropertyBinding(PropertyBindingException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		
+		String path = joinPath(ex.getPath());
+		
+		TipoProblemaEnum problemType = TipoProblemaEnum.MENSAGEM_INCOMPREENSIVEL;
+		String detail = String.format("A propriedade '%s' não existe. "
+				+ "Corrija ou remova essa propriedade e tente novamente.", path);
+
+		Problema problem = createProblemBuilder(status, problemType, detail)
+				.userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+				.build();
+		
+		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+	
+	private ResponseEntity<Object> handleInvalidFormat(InvalidFormatException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+
+		String path = joinPath(ex.getPath());
+		
+		TipoProblemaEnum problemType = TipoProblemaEnum.MENSAGEM_INCOMPREENSIVEL;
+		String detail = String.format("A propriedade '%s' recebeu o valor '%s', "
+				+ "que é de um tipo inválido. Corrija e informe um valor compatível com o tipo %s.",
+				path, ex.getValue(), ex.getTargetType().getSimpleName());
+		
+		Problema problem = createProblemBuilder(status, problemType, detail)
+				.userMessage(MSG_ERRO_GENERICA_USUARIO_FINAL)
+				.build();
+		
+		return handleExceptionInternal(ex, problem, headers, status, request);
+	}
+	
 	protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
 			HttpStatus status, WebRequest request) {
 		
@@ -68,7 +130,13 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 		return super.handleExceptionInternal(ex, body, headers, status, request);
 	}
 	
-	private Problema.ProblemaBuilder createProblemBuilder(HttpStatus status, TipoProblemaEnum problemType,
+	private String joinPath(List<Reference> references) {
+		return references.stream()
+			.map(ref -> ref.getFieldName())
+			.collect(Collectors.joining("."));
+	}
+	
+	private Problema.ProblemaBuilder createProblemBuilder(HttpStatusCode status, TipoProblemaEnum problemType,
 			String detail) {
 
 		return Problema.builder().timestamp(LocalDateTime.now()).status(status.value()).type(problemType.getUri())
