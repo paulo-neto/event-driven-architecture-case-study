@@ -16,3 +16,13 @@ Content-Type: application/json
 	"preco": "80.0",
 	"categoriaId": 5
 }
+
+PATCH http://localhost:8080/produtos/6
+Content-Type: application/json
+
+{
+	"descricao": "Livro Irmãos Karamazov 2ª edição",
+	"preco": "95.0"
+}
+
+DELETE  http://localhost:8080/produtos/6

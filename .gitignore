@@ -26,3 +26,5 @@ replay_pid*
 # IDE's config files
 .project
 .vscode/
+
+ecommerce-product/bin/
