@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.pauloneto.ecommerce_product.domain.model.Categoria;
 
 @Repository
-public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
+public interface CategoriaRepository extends JpaRepository<Categoria, Long>, CategoriaRepositoryQueries {
 
 }

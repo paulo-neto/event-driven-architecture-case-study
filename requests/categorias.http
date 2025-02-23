@@ -1,0 +1,16 @@
+GET http://localhost:8080/categorias/
+
+GET http://localhost:8080/categorias/?ativo=true
+
+POST http://localhost:8080/categorias/
+
+Teste
+
+DELETE http://localhost:8080/categorias/7
+
+PATCH http://localhost:8080/categorias/6
+Content-Type: application/json
+
+{
+    "nome": "Móveis do Lar"
+}

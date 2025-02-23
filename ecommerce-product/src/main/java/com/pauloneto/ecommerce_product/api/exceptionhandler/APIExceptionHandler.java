@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import com.fasterxml.jackson.databind.JsonMappingException.Reference;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import com.pauloneto.ecommerce_product.domain.exception.CategoriaExistenteException;
 import com.pauloneto.ecommerce_product.domain.exception.EntidadeNaoEncontradaException;
 
 @ControllerAdvice
@@ -52,6 +53,15 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 				.build();
 		
 		return handleExceptionInternal(ex, problem, new HttpHeaders(), status, request);
+	}
+	
+	@ExceptionHandler(CategoriaExistenteException.class)
+	public ResponseEntity<Object> handleCategoriaExistenteException(CategoriaExistenteException e, WebRequest request) {
+		HttpStatus status = HttpStatus.CONFLICT;
+		TipoProblemaEnum problemType = TipoProblemaEnum.ERRO_NEGOCIO;
+		String detail = e.getMessage();
+		Problema problem = createProblemBuilder(status, problemType, detail).userMessage(detail).build();
+		return handleExceptionInternal(e, problem, new HttpHeaders(), status, request);
 	}
 	
 	@Override

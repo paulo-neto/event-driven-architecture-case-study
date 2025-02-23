@@ -1,5 +1,7 @@
 package com.pauloneto.ecommerce_product.domain.service;
 
+import static com.pauloneto.ecommerce_product.domain.service.CategoriaService.MSG_CAT_NAO_ENCONTRADA;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ public class ProdutoService {
 
 	private final ProdutoRepository repository;
 	private final CategoriaRepository categoriaRepository;
-	private static final String MSG_CAT_NAO_ENCONTRADA = "Categoria com ID %d não encontrada";
+	
 	private static final String MSG_PROD_NAO_ENCONTRADO = "Produto com ID %d não encontrado";
 	
 	public ProdutoService(final ProdutoRepository repository, CategoriaRepository cr) {
