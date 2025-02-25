@@ -37,22 +37,53 @@ services:
       OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]' # ,"https://opensearch-node2:9200" # Define the OpenSearch nodes that OpenSearch Dashboards will query
     networks:
       - ecommerce-network
-
+    depends_on:
+      - opensearch-node1
   mysqlsrv:
     image: mysql:5.7
     environment:
         MYSQL_ROOT_PASSWORD: "MySql2019!"
         MYSQL_DATABASE: "ecommerce-produtos"
     ports:
-    - "3306:3306"
+      - "3306:3306"
     volumes:
-    - /home/paulo/Desenvolvimento/docker/mysql:/var/lib/mysql
+      - /home/paulo/Desenvolvimento/docker/mysql:/var/lib/mysql
     networks:
-    - ecommerce-network
-    
+      - ecommerce-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: keycloak-ecommerce
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 7080
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+      KC_DB: mysql
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: pa55word
+      KC_DB_URL_HOST: mysqlsrv
+      KC_DB_URL_PORT: 3306
+      KC_DB_SCHEMA: keycloak
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    command: ["start-dev", "--http-port", "7080", "--https-port", "7443"]
+    ports:
+      - "7080:7080"
+      - "7443:7443"
+    networks:
+      - ecommerce-network
+    depends_on: 
+      - mysqlsrv
+
 volumes:
   opensearch-data1:
-  opensearch-data2:
 
 networks: 
   ecommerce-network:
