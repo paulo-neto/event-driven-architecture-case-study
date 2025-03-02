@@ -1,14 +1,29 @@
+# @name openIdToken
+POST http://localhost:7080/realms/security-ecommerce-api/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=ecommerce-client&client_secret=pL351UQmqAJlu9Wh1yCR1LFad2reQ6MT&grant_type=client_credentials
+###
+@access-token={{openIdToken.response.body.access_token}}
+
+
 GET http://localhost:8080/categorias/
+Authorization: Bearer {{ access-token }}
+
 
 GET http://localhost:8080/categorias/?ativo=true
+Authorization: Bearer {{ access-token }}
 
 POST http://localhost:8080/categorias/
+Authorization: Bearer {{ access-token }}
 
 Teste
 
 DELETE http://localhost:8080/categorias/7
+Authorization: Bearer {{ access-token }}
 
 PATCH http://localhost:8080/categorias/6
+Authorization: Bearer {{ access-token }}
 Content-Type: application/json
 
 {
