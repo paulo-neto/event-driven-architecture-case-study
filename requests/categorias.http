@@ -1,3 +1,4 @@
+## Obter um token válido no Keycloak
 # @name openIdToken
 POST http://localhost:7080/realms/security-ecommerce-api/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
@@ -6,6 +7,8 @@ client_id=ecommerce-client&client_secret=pL351UQmqAJlu9Wh1yCR1LFad2reQ6MT&grant_
 ###
 @access-token={{openIdToken.response.body.access_token}}
 
+
+## Utilizando o token obtido para realizar as requisições
 
 GET http://localhost:8080/categorias/
 Authorization: Bearer {{ access-token }}
@@ -17,9 +20,9 @@ Authorization: Bearer {{ access-token }}
 POST http://localhost:8080/categorias/
 Authorization: Bearer {{ access-token }}
 
-Teste
+  
 
-DELETE http://localhost:8080/categorias/7
+DELETE http://localhost:8080/categorias/ 
 Authorization: Bearer {{ access-token }}
 
 PATCH http://localhost:8080/categorias/6
@@ -27,5 +30,5 @@ Authorization: Bearer {{ access-token }}
 Content-Type: application/json
 
 {
-    "nome": "Móveis do Lar"
+   
 }

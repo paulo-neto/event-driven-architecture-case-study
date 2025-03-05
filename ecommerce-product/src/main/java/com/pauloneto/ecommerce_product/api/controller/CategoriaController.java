@@ -22,12 +22,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pauloneto.ecommerce_product.api.exceptionhandler.Erro;
 import com.pauloneto.ecommerce_product.domain.dto.CategoriaDTO;
 import com.pauloneto.ecommerce_product.domain.model.Categoria;
 import com.pauloneto.ecommerce_product.domain.service.CategoriaService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 
+@Tag(name = "categorias", description = "API para ações no recurso Categoria")
 @RestController
 @RequestMapping("categorias")
 public class CategoriaController {
@@ -38,19 +49,62 @@ public class CategoriaController {
 		this.service = c;
 	}
 	
+	@Operation(summary = "Cria uma nova Categoria", description = "Cria uma nova Categoria, caso ela não exista", tags = "categorias")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "201",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = CategoriaDTO.class)) }),
+			@ApiResponse(
+					description = "Categoria exitente", responseCode = "409",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public CategoriaDTO create(@RequestBody String novarequestCategoria) {
-		var dto = service.create(novarequestCategoria);
+	public CategoriaDTO create(
+			@Valid @RequestBody @NotBlank(message = "O nome da nova Categoria não pode ser vazio!") String novaCategoria) {
+		var dto = service.create(novaCategoria);
 		return dto;
 	}
 	
+	@Operation(summary = "Inativa uma Categoria", description = "Inativa uma Categoria, caso ela exista", tags = "categorias")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "204"), 
+			@ApiResponse(
+					description = "Categoria não encontrada", responseCode = "404",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@DeleteMapping("/{categoriaId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void inativar(@PathVariable("categoriaId") Long categoriaId) {
 		service.inativate(categoriaId);
 	}
 	
+	@Operation(summary = "Lista Categorias", description = "Lista Categorias, pelos critérios informados", tags = "categorias")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "200",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = CategoriaDTO[].class)) }) ,
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@GetMapping("/")
 	public List<CategoriaDTO> findBy(
 			@RequestParam(required = false) String categoria,
@@ -59,9 +113,30 @@ public class CategoriaController {
 		return service.findBy(categoria, ativo);
 	}
 	
+	@Operation(summary = "Atualiza uma Categoria", description = "Atualiza uma Categoria, caso ela exista com os valores informados", tags = "categorias")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "200",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = CategoriaDTO.class)) }),
+			@ApiResponse(
+					description = "Categoria exitente", responseCode = "409",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Categoria não encontrada", responseCode = "404",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@PatchMapping(value = "/{categoriaId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public CategoriaDTO update(@PathVariable("categoriaId") Long categoriaId,
-			@RequestBody Map<String, Object> campos, HttpServletRequest request) {
+	public CategoriaDTO update(
+			@PathVariable("categoriaId")Long categoriaId,
+			@Valid @RequestBody @NotEmpty(message = "É esperado algum campo para alteração!") Map<String, Object> campos, HttpServletRequest request) {
 		var produtoAtual = service.findOrFail(categoriaId);
 		merge(campos, produtoAtual, request);
 		var dto = service.update(categoriaId, produtoAtual);

@@ -24,12 +24,22 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pauloneto.ecommerce_product.api.controller.dto.ProdutoRequest;
+import com.pauloneto.ecommerce_product.api.exceptionhandler.Erro;
 import com.pauloneto.ecommerce_product.domain.dto.ProdutoDTO;
 import com.pauloneto.ecommerce_product.domain.model.Produto;
 import com.pauloneto.ecommerce_product.domain.service.ProdutoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 
+@Tag(name = "produtos", description = "API para ações no recurso Produto")
 @RestController
 @RequestMapping(value = "produtos")
 public class ProdutoController {
@@ -40,6 +50,18 @@ public class ProdutoController {
 		this.prodService = produtoService;
 	}
 	
+	@Operation(summary = "Lista Produtos", description = "Lista Produtos, pelos critérios informados", tags = "produtos")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "200",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = ProdutoDTO[].class)) }) ,
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<ProdutoDTO> findBy(
 			@RequestParam(required = false) String nome,
@@ -50,16 +72,53 @@ public class ProdutoController {
 		return prodService.findBy(nome, precoInicio, precoFim, categoria);
 	}
 	
+	@Operation(summary = "Cria um novo Produto", description = "Cria um novo Produto, caso ele não exista", tags = "produtos")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "201",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Produto.class)) }) ,
+			@ApiResponse(
+					description = "Categoria exitente", responseCode = "409",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public ProdutoDTO create(@RequestBody ProdutoRequest produto) {
+	public ProdutoDTO create(@Valid @RequestBody ProdutoRequest produto) {
 		var dto = prodService.create(produto);
 		return dto;
 	}
 	
+	@Operation(summary = "Atualiza um Produto", description = "Atualiza um Produto, caso ele exista com os valores informados", tags = "produtos")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "200",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Produto.class)) }) ,
+			@ApiResponse(
+					description = "Categoria não encontrada", responseCode = "409",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Produto não encontrado", responseCode = "404",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@PatchMapping(value = "/{produtoId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ProdutoDTO update(@PathVariable("produtoId") Long produtoId, 
-			@RequestBody Map<String, Object> campos, HttpServletRequest request) {
+			@Valid @NotEmpty(message = "É esperado algum campo para alteração!") @RequestBody Map<String, Object> campos,
+			HttpServletRequest request) {
 		
 		var produtoAtual = prodService.findOrFail(produtoId);
 		merge(campos, produtoAtual, request);
@@ -67,6 +126,20 @@ public class ProdutoController {
 		return dto;
 	}
 	
+	@Operation(summary = "Inativa um Produto", description = "Inativa um Produto, caso ele exista", tags = "produtos")
+	@ApiResponses(value = { 
+			@ApiResponse(
+					description = "Ação realizada com sucesso", responseCode = "204") ,
+			@ApiResponse(
+					description = "Produto não encontrado", responseCode = "404",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }),
+			@ApiResponse(
+					description = "Ocorreu um erro interno inesperado na API", responseCode = "500",
+					content = { @Content(mediaType = "application/json", 
+					schema = @Schema(implementation = Erro.class)) }) 
+			}
+	)
 	@DeleteMapping(value = "/{produtoId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void inativate(@PathVariable("produtoId") Long produtoId) {

@@ -1,14 +1,27 @@
+## Obter um token válido no Keycloak
+# @name openIdToken
+POST http://localhost:7080/realms/security-ecommerce-api/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=ecommerce-client&client_secret=pL351UQmqAJlu9Wh1yCR1LFad2reQ6MT&grant_type=client_credentials
+###
+@access-token={{openIdToken.response.body.access_token}}
+
 GET http://localhost:8080/produtos/?categoria=Eletro
 Content-Type: application/json
+Authorization: Bearer {{ access-token }}
 
 GET http://localhost:8080/produtos/?nome=LG
 Content-Type: application/json
+Authorization: Bearer {{ access-token }}
 
 GET http://localhost:8080/produtos/
 Content-Type: application/json
+Authorization: Bearer {{ access-token }}
 
 POST http://localhost:8080/produtos/
 Content-Type: application/json
+Authorization: Bearer {{ access-token }}
 
 {
     "nome": "Irmãos Karamazov",
@@ -19,10 +32,11 @@ Content-Type: application/json
 
 PATCH http://localhost:8080/produtos/6
 Content-Type: application/json
+Authorization: Bearer {{ access-token }}
 
 {
-	"descricao": "Livro Irmãos Karamazov 2ª edição",
-	"preco": "95.0"
+
 }
 
 DELETE  http://localhost:8080/produtos/6
+Authorization: Bearer {{ access-token }}

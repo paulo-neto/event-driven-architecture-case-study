@@ -3,7 +3,7 @@ package com.pauloneto.ecommerce_product.api.exceptionhandler;
 import lombok.Getter;
 
 @Getter
-public enum TipoProblemaEnum {
+public enum TipoErroEnum {
 
 	ERRO_DE_SISTEMA("/erro-de-sistema", "Erro de sistema"),
 	PARAMETRO_INVALIDO("/parametro-invalido", "Parâmetro inválido"),
@@ -15,7 +15,7 @@ public enum TipoProblemaEnum {
 	private String title;
 	private String uri;
 	
-	TipoProblemaEnum(String path, String title) {
+	TipoErroEnum(String path, String title) {
 		this.uri = "https://api.produtos.com.br" + path;
 		this.title = title;
 	}
