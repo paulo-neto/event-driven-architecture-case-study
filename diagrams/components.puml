@@ -1,0 +1,71 @@
+@startuml
+title <size:45>C4 Component diagram to Generic E-Commerce
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define DEVICONS2 https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons2
+!define SPRITESURL https://raw.githubusercontent.com/rabelenda/cicon-plantuml-sprites/v1.0/sprites
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!includeurl SPRITESURL/kafka.puml
+!includeurl SPRITESURL/cassandra.puml
+!includeurl SPRITESURL/redis.puml
+!include DEVICONS2/nestjs.puml
+!include DEVICONS/angular.puml
+!include DEVICONS/java.puml
+!include DEVICONS/nodejs.puml
+!include DEVICONS/mysql.puml
+!include DEVICONS/redis.puml
+
+!include FONTAWESOME/users.puml
+
+
+
+Person(customer, "E-commerce customer", "Customer who wants to buy a product or service")
+
+
+System_Boundary(core, "E-commerce Component core "){
+    Container(product,"API ecommerce-ms-product", "Java - Quarkus", $sprite="java")
+    Container(order,"API ecommerce-ms-order", "Java - Quarkus", $sprite="java")
+    ContainerDb(product_db,"Database","MySql", "Holds product information", $sprite="mysql")
+    ContainerDb(order_db,"Database","Cassandra", "Holds order and invoice information", $sprite="mysql")
+    ContainerDb(redisDB,"Memory Database","Redis","Memory database for search itens, cart itens, order and invoice information", $sprite="redis")
+    Container(email, "API ecommerce-ms-email", "Java - Quarkus", "Service for email send", $sprite="java")
+
+    System_Boundary(sale, "Sale components"){
+        ContainerQueue(orderTopic,"TOPIC", "Kafka", "Topic for new order event", $sprite="kafka")
+        Container(orderConsumer, "Consumer", "Nestjs", "Consumer of new order event", $sprite="nestjs")
+        ContainerQueue(nfseTopic,"TOPIC", "Kafka", "Topic for issuing invoices event", $sprite="kafka")
+        Container(nfseConsumer, "Consumer", "Nestjs", "Consumer of invoice issuance events", $sprite="nestjs")
+    }
+}
+
+System_Boundary(app, "E-commerce Aplication "){
+    Container(spa, "SPA", "Angular", "The main interface that the customer interacts with", $sprite="angular")
+    Container(bff,"BFF","NodeJs","Backend to interface SPA", $sprite="nodejs")
+
+}
+
+System_Boundary(external, "External components"){
+    Component_Ext(payment,"API", "Payment service")
+    Component_Ext(nfse,"API", "NFS-e service")
+}
+
+Rel_Neighbor(customer,spa,"Uses","https")
+
+Rel_R(spa,bff,"Use","https")
+Rel(product,product_db, "Read/Write", "tcp")
+Rel(order,order_db, "Read/Write", "tcp")
+
+Rel_D(bff,product,"List products","https")
+Rel(bff, orderTopic, "New order event", "tcp")
+Rel(bff,redisDB, "Save cart itens, search", "http")
+Rel_R(orderTopic, orderConsumer,"Order process","tcp")
+Rel(orderConsumer,payment, "Confirm payment?", "https")
+Rel(orderConsumer,order, "Save new order", "https")
+Rel(orderConsumer,product,"Decreases inventory of sale products", "https")
+Rel(orderConsumer,nfseTopic, "Confirmed payment, issue invoice event", "tcp")
+Rel(nfseTopic,nfseConsumer, "Consumes","tcp")
+Rel(nfseConsumer, nfse, "Uses", "https")
+Rel(orderConsumer,email, "Send purchase confirmation email", "https")
+
+@enduml
