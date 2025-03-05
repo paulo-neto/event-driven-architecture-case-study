@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,8 +43,7 @@ public class APIExceptionHandler extends ResponseEntityExceptionHandler {
 		List<Erro.Campo> problemObjects = ex.getAllErrors().stream()
 				.map(oe -> {
 					String msg = oe.getDefaultMessage();
-					(DefaultMessageSourceResolvable)oe.getArguments()[0]
-					return Erro.Campo.builder().nome("").mensagem(msg).build();
+					return Erro.Campo.builder().mensagem(msg).build();
 				}).collect(Collectors.toList());
 		Erro e = createErroBuilder(status, tipoErro, MSG_ERRO_CAMPO_INVALIDO).userMessage(MSG_ERRO_CAMPO_INVALIDO)
 				.campos(problemObjects).build();
