@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import com.pauloneto.ecommerce_order.domain.model.enums.SituacaoPedidoEnum;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,6 +14,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +45,7 @@ public class Pedido {
 	
 	@Enumerated(EnumType.ORDINAL)
 	private SituacaoPedidoEnum situacao;
+	
+	@OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
+	private FormaPagamentoPedido formPagPed;
 }
