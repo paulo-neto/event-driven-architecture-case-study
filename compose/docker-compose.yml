@@ -1,4 +1,4 @@
-
+version: '3.8'
 services:
 #  opensearch-node1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
 #    image: opensearchproject/opensearch:latest # Specifying the latest available image - modify if you want a specific version
@@ -40,47 +40,48 @@ services:
 #    depends_on:
 #      - opensearch-node1
   mysqlsrv:
-    image: mysql:5.7
+    image: mysql:8.0
     environment:
-        MYSQL_ROOT_PASSWORD: "MySql2019!"
-        MYSQL_DATABASE: "ecommerce-produtos"
+        MYSQL_ROOT_PASSWORD: "Tr3x2@25"
+        #MYSQL_DATABASE: "ecommerce-produtos"
     ports:
       - "3306:3306"
     volumes:
-      - /home/paulo/Desenvolvimento/docker/mysql:/var/lib/mysql
+      - ./docker/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - /home/dell/data/docker/mysql:/var/lib/mysql
     networks:
       - ecommerce-network
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0
-    container_name: keycloak-ecommerce
-    environment:
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 7080
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HEALTH_ENABLED: "true"
-      KC_LOG_LEVEL: info
-      KC_DB: mysql
-      KC_DB_USERNAME: root
-      KC_DB_PASSWORD: MySql2019!
-      KC_DB_URL_HOST: mysqlsrv
-      KC_DB_URL_PORT: 3306
-      KC_DB_SCHEMA: keycloak
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
-      interval: 15s
-      timeout: 2s
-      retries: 15
-    command: ["start-dev", "--http-port", "7080", "--https-port", "7443"]
-    ports:
-      - "7080:7080"
-      - "7443:7443"
-    networks:
-      - ecommerce-network
-    depends_on: 
-      - mysqlsrv
+# keycloak:
+#   image: quay.io/keycloak/keycloak:24.0
+#   container_name: keycloak-ecommerce
+#   environment:
+#     KC_HOSTNAME: localhost
+#     KC_HOSTNAME_PORT: 7080
+#     KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+#     KEYCLOAK_ADMIN: admin
+#     KEYCLOAK_ADMIN_PASSWORD: admin
+#     KC_HEALTH_ENABLED: "true"
+#     KC_LOG_LEVEL: info
+#     KC_DB: mysql
+#     KC_DB_USERNAME: root
+#     KC_DB_PASSWORD: MySql2019!
+#     KC_DB_URL_HOST: mysqlsrv
+#     KC_DB_URL_PORT: 3306
+#     KC_DB_SCHEMA: keycloak
+#   healthcheck:
+#     test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+#     interval: 15s
+#     timeout: 2s
+#     retries: 15
+#   command: ["start-dev", "--http-port", "7080", "--https-port", "7443"]
+#   ports:
+#     - "7080:7080"
+#     - "7443:7443"
+#   networks:
+#     - ecommerce-network
+#   depends_on: 
+#     - mysqlsrv
 
 volumes:
   opensearch-data1:
