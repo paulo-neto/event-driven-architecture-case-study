@@ -48,4 +48,12 @@ public class Pedido {
 	
 	@OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
 	private FormaPagamentoPedido formPagPed;
+	
+	@OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
+	private ClientePedido cliente;
+	
+	@OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
+	private EnderecoPedido endereco;
+	
+	
 }

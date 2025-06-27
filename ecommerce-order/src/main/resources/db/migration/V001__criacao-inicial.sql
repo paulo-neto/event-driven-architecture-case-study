@@ -1,5 +1,5 @@
 create table tb_pedido (
-    id bigint not null,
+    id bigint not null auto_increment,
     dt_criacao datetime not null,
     situacao int not null constraint st_pedido_chk check (situacao = 1 or situacao = 2 or situacao = 3 or situacao = 4),
 
@@ -26,7 +26,7 @@ create table tb_cliente_pedido (
 ) engine=InnoDB default charset=utf8;
 
 create table tb_endereco_pedido (
-    cep smallint(8) not null,
+    cep int not null,
     uf varchar(2) not null,
     municipio varchar(100) not null,
     logradouro varchar(100) not null,
